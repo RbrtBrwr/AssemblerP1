@@ -4,10 +4,10 @@
 #B: .asciiz "+3333333333333333333333333333333333333333333333333"
 # A - B debe ser +6666666666666666666666666666666666666666666666666
 
-A: .asciiz "9999999999999999999999999999999999999999999999999"
-B: .asciiz "9999999999999999999999999999999999999999999999999"
+#A: .asciiz "9999999999999999999999999999999999999999999999999"
+#B: .asciiz "9999999999999999999999999999999999999999999999999"
 
-C: .asciiz "6666666666666666666666666666666666666666666666666"
+#C: .asciiz "6666666666666666666666666666666666666666666666666"
 # B + C debe ser +9999999999999999999999999999999999999999999999999
 
 # C - A debe ser -3333333333333333333333333333333333333333333333333
@@ -63,17 +63,17 @@ salto: .asciiz "\n"
 	syscall
 .end_macro 
 
-#IMPRIMIR(mensajeNumeroA)
-#OPERANDO(numeroA)
-#SALTO
+IMPRIMIR(mensajeNumeroA)
+OPERANDO(numeroA)
+SALTO
 
 #IMPRIMIR(mensajeOperacion)
 #OPERACION
 #SALTO
 
-#IMPRIMIR(mensajeNumeroB)
-#OPERANDO(numeroB)
-#SALTO
+IMPRIMIR(mensajeNumeroB)
+OPERANDO(numeroB)
+SALTO
 
 #IMPRIMIR(numeroA)
 #IMPRIMIR(operacion)
@@ -85,30 +85,27 @@ salto: .asciiz "\n"
 .eqv DIGB $t3		# Digito IT del numero B
 .eqv SUMADOR $t4		# Proximo digito
 
+
+SUMA:
 li IT 48
 li NUMIT 49
 li SUMADOR 0
 
-#iteracion:
-#lb $t2 A(ITA)
-#addi $t2 $t2 -0x30
-#li $v0 1
-#move $a0 $t2
-#syscall
-#add 
-#addi ITA ITA -1
-#bnez ITA iteracion
-
-	suma:
+	loopSuma:
 bltz NUMIT listoSuma
 
 # Cargo los digitos a sumar
-lb DIGA A(IT)
-lb DIGB B(IT)
-
+lb DIGA numeroA(IT)
+beqz DIGA continueA
 # Convierto de ascii a dcimal
 addi DIGA DIGA -0x30
+continueA:
+
+lb DIGB numeroB(IT)
+beqz DIGA continueB
+
 addi DIGB DIGB -0x30
+continueB:
 
 # HAY QUE REVISAR QUE NO SEA MENOR QUE CERO, SIGNIFICA QUE ES UN ERROR O UN SIGNO
 
@@ -129,7 +126,7 @@ addi NUMIT NUMIT -1
 # Muevo iterador de los numeros
 addi IT IT -1
 
-b suma
+b loopSuma
 
 ajustarSum:
 
@@ -144,7 +141,9 @@ addi NUMIT NUMIT -1
 # Muevo iterador de los numeros
 addi IT IT -1
 
-b suma
+b loopSuma
+
+caseCero:
 
 	listoSuma:
 IMPRIMIR(resultado)

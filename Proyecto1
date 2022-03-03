@@ -1,15 +1,84 @@
-.data
+	.data
 
-A: .asciiz '+9999999999999999999999999999999999999999999999999'
-B: .asciiz '+3333333333333333333333333333333333333333333333333'
+#A: .asciiz "+9999999999999999999999999999999999999999999999999"
+#B: .asciiz "+3333333333333333333333333333333333333333333333333"
 # A - B debe ser +6666666666666666666666666666666666666666666666666
 
-C: .asciiz '+6666666666666666666666666666666666666666666666666'
+A: .asciiz "+9999999999999999999999999999999999999999999954321"
+B: .asciiz "+3333333333333333333333333333333333333333333333333"
+
+C: .asciiz "+6666666666666666666666666666666666666666666666666"
 # B + C debe ser +9999999999999999999999999999999999999999999999999
 
 # C - A debe ser -3333333333333333333333333333333333333333333333333
 
-numeroA: .space 51
-numeroB: .space 51
+numeroA: .space 52
+operacion: .space 2
+numeroB: .space 52
 
-.text
+mensajeNumeroA: .asciiz "Introduzca primer numero: "
+mensajeOperacion: .asciiz "Introduzca la operacion que desea realizar: "
+mensajeNumeroB: .asciiz "Introduzca segundo numero: "
+
+salto: .asciiz "\n"
+
+	.text
+
+	#MACROS
+# IMPRIMIR MENSAJES
+.macro IMPRIMIR(%mensaje)
+	li $v0 4
+	la $a0 %mensaje
+	syscall
+.end_macro 
+
+# SALTO DE LINEA
+.macro SALTO
+	li $v0 4
+	la $a0 salto
+	syscall
+.end_macro 
+
+# PEDIR OPERANDO AL USUARIO
+.macro OPERANDO(%numero)
+	li $v0 8
+	la $a0 %numero
+	li $a1 52
+	syscall
+.end_macro 
+
+# PEDIR SIMBOLO DE OPERACION AL USUARIO
+.macro OPERACION
+	li $v0 8
+	la $a0 operacion
+	li $a1 2
+	syscall
+.end_macro 
+
+# SALIR DEL PROGRAMA
+.macro EXIT
+	li $v0 10
+	syscall
+.end_macro 
+
+IMPRIMIR(mensajeNumeroA)
+OPERANDO(numeroA)
+SALTO
+
+IMPRIMIR(mensajeOperacion)
+OPERACION
+SALTO
+
+IMPRIMIR(mensajeNumeroB)
+OPERANDO(numeroB)
+SALTO
+
+IMPRIMIR(numeroA)
+IMPRIMIR(operacion)
+IMPRIMIR(numeroB)
+
+EXIT
+
+
+	
+	

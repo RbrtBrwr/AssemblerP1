@@ -79,14 +79,16 @@ SALTO
 #IMPRIMIR(operacion)
 #IMPRIMIR(numeroB)
 
-.eqv IT $t0		# Iterador de digitos
+
+
+SUMA:
+
+.eqv IT $t0		# Iterador de digitos 	CREO QUE NECESITO UN ITERADOR POR NUMERO, ME FALTA VER COMO LOS ALINEO
 .eqv NUMIT $t1		# Iterador del numero
 .eqv DIGA $t2		# Digito IT del numero A
 .eqv DIGB $t3		# Digito IT del numero B
 .eqv SUMADOR $t4		# Proximo digito
 
-
-SUMA:
 li IT 48
 li NUMIT 49
 li SUMADOR 0

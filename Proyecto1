@@ -4,10 +4,10 @@
 #B: .asciiz "+3333333333333333333333333333333333333333333333333"
 # A - B debe ser +6666666666666666666666666666666666666666666666666
 
-A: .asciiz "+9999999999999999999999999999999999999999999954321"
-B: .asciiz "+3333333333333333333333333333333333333333333333333"
+A: .asciiz "9999999999999999999999999999999999999999999999999"
+B: .asciiz "9999999999999999999999999999999999999999999999999"
 
-C: .asciiz "+6666666666666666666666666666666666666666666666666"
+C: .asciiz "6666666666666666666666666666666666666666666666666"
 # B + C debe ser +9999999999999999999999999999999999999999999999999
 
 # C - A debe ser -3333333333333333333333333333333333333333333333333
@@ -15,6 +15,8 @@ C: .asciiz "+6666666666666666666666666666666666666666666666666"
 numeroA: .space 52
 operacion: .space 2
 numeroB: .space 52
+
+resultado: .space 53
 
 mensajeNumeroA: .asciiz "Introduzca primer numero: "
 mensajeOperacion: .asciiz "Introduzca la operacion que desea realizar: "
@@ -61,21 +63,91 @@ salto: .asciiz "\n"
 	syscall
 .end_macro 
 
-IMPRIMIR(mensajeNumeroA)
-OPERANDO(numeroA)
-SALTO
+#IMPRIMIR(mensajeNumeroA)
+#OPERANDO(numeroA)
+#SALTO
 
-IMPRIMIR(mensajeOperacion)
-OPERACION
-SALTO
+#IMPRIMIR(mensajeOperacion)
+#OPERACION
+#SALTO
 
-IMPRIMIR(mensajeNumeroB)
-OPERANDO(numeroB)
-SALTO
+#IMPRIMIR(mensajeNumeroB)
+#OPERANDO(numeroB)
+#SALTO
 
-IMPRIMIR(numeroA)
-IMPRIMIR(operacion)
-IMPRIMIR(numeroB)
+#IMPRIMIR(numeroA)
+#IMPRIMIR(operacion)
+#IMPRIMIR(numeroB)
+
+.eqv IT $t0		# Iterador de digitos
+.eqv NUMIT $t1		# Iterador del numero
+.eqv DIGA $t2		# Digito IT del numero A
+.eqv DIGB $t3		# Digito IT del numero B
+.eqv SUMADOR $t4		# Proximo digito
+
+li IT 48
+li NUMIT 49
+li SUMADOR 0
+
+#iteracion:
+#lb $t2 A(ITA)
+#addi $t2 $t2 -0x30
+#li $v0 1
+#move $a0 $t2
+#syscall
+#add 
+#addi ITA ITA -1
+#bnez ITA iteracion
+
+	suma:
+bltz NUMIT listoSuma
+
+# Cargo los digitos a sumar
+lb DIGA A(IT)
+lb DIGB B(IT)
+
+# Convierto de ascii a dcimal
+addi DIGA DIGA -0x30
+addi DIGB DIGB -0x30
+
+# HAY QUE REVISAR QUE NO SEA MENOR QUE CERO, SIGNIFICA QUE ES UN ERROR O UN SIGNO
+
+add SUMADOR SUMADOR DIGA
+add SUMADOR SUMADOR DIGB
+
+# Si el sumador es mayor que 9 tengo que ajustar
+bgt SUMADOR 9 ajustarSum
+
+# Si no es mayor que nueve, cargo el digito ascii
+addi SUMADOR SUMADOR 0x30
+sb SUMADOR resultado(NUMIT)
+
+# Reseteo sumador
+li SUMADOR 0
+# Muevo iterador del resultado
+addi NUMIT NUMIT -1
+# Muevo iterador de los numeros
+addi IT IT -1
+
+b suma
+
+ajustarSum:
+
+addi SUMADOR SUMADOR -10
+addi SUMADOR SUMADOR 0x30
+sb SUMADOR resultado(NUMIT)
+
+# Reseteo sumador
+li SUMADOR 1
+# Muevo iterador del resultado
+addi NUMIT NUMIT -1
+# Muevo iterador de los numeros
+addi IT IT -1
+
+b suma
+
+	listoSuma:
+IMPRIMIR(resultado)
 
 EXIT
 

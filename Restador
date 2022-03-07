@@ -1,0 +1,229 @@
+	.data
+numeroA: .space 52
+operacion: .space 2
+numeroB: .space 52
+
+resultado: .space 52
+
+mensajeNumeroA: .asciiz "Introduzca primer numero: "
+mensajeOperacion: .asciiz "Introduzca la operacion que desea realizar: "
+mensajeNumeroB: .asciiz "Introduzca segundo numero: "
+
+salto: .asciiz "\n"
+
+	.text
+
+	#MACROS
+# IMPRIMIR MENSAJES
+.macro IMPRIMIR(%mensaje)
+	li $v0 4
+	la $a0 %mensaje
+	syscall
+.end_macro 
+
+# SALTO DE LINEA
+.macro SALTO
+	li $v0 4
+	la $a0 salto
+	syscall
+.end_macro 
+
+# PEDIR OPERANDO AL USUARIO
+.macro OPERANDO(%numero)
+	li $v0 8
+	la $a0 %numero
+	li $a1 52
+	syscall
+.end_macro 
+
+# PEDIR SIMBOLO DE OPERACION AL USUARIO
+.macro OPERACION
+	li $v0 8
+	la $a0 operacion
+	li $a1 2
+	syscall
+.end_macro 
+
+# SALIR DEL PROGRAMA
+.macro EXIT
+	li $v0 10
+	syscall
+.end_macro 
+
+
+# VARIABLES A USAR
+.eqv ITA $t0		# Iterador de digitos 	
+.eqv ITB $t1
+.eqv NUMIT $t2		# Iterador del numero
+.eqv DIGA $t3		# Digito IT del numero A
+.eqv DIGB $t4		# Digito IT del numero B
+.eqv RESTADOR $t5	# Aqui va la resta de los digitos
+.eqv BUFFER $t6		# Aqui va el carry del siguiente digito
+
+li ITA 49
+li ITB 49
+li NUMIT 49
+li RESTADOR 0
+
+IMPRIMIR(mensajeNumeroA)
+OPERANDO(numeroA)
+SALTO
+
+IMPRIMIR(mensajeNumeroB)
+OPERANDO(numeroB)
+SALTO
+
+	loopIteradorA:
+lb DIGA numeroA(ITA)		# Busco la posicion del primer digito ascii
+addi ITA ITA -1
+bnez DIGA exitLoopIteradorA
+
+b loopIteradorA
+	exitLoopIteradorA:
+	
+	loopIteradorB:
+lb DIGB numeroB(ITB)
+addi ITB ITB -1
+bnez DIGB exitLoopIteradorB
+
+b loopIteradorB
+	exitLoopIteradorB:
+
+bgt ITA ITB resta1		# Si el iterador de A es mayor que el de B, resto normal
+blt ITA ITB resta2		# Si el iterador de B es mayor que el de A, resto B - A y cambio el signo
+
+
+# ESTO NO ESTA LISTO, SI SON NUMEROS DEL MISMO LARGO Y EL PRIMER DIGITO ES IGUAL ENTONCES ETSPLOTA
+li $t7 0				#Para ver el primer digito, esto despues va a tener que ser 1 para contar el signo
+
+greaterThanLoop:
+lb $t8 numeroA($t7)
+lb $t9 numeroB($t7)
+
+bgt $t9 $t8 resta2		# Si el digito es mayor en A que en B, A es mayor que B y resto normal
+bgt $t8 $t9 resta1		# Si el digito es mayor en B que en A, B es mayor que A entonces resto B- A y cambio el signo
+beq $t8 0x0A esCero
+
+addi $t7 $t7 1
+b greaterThanLoop
+
+# CASO NUMERO A ES MAYOR QUE NUMERO B
+resta1:
+bltz NUMIT listo
+
+#lb DIGA numeroA(ITA)
+#lb DIGB numeroB(ITB)
+#bgt DIGA 0x
+#bgez ITB skip1
+#li DIGB 0
+
+bltz ITA continueA1		# Si el iterador de numero A es cero o menos, el digito es cero
+lb DIGA numeroA(ITA)		# Cargo el digito
+addi DIGA DIGA -0x30		# Convierto digito a decimal
+b sigueA1
+continueA1:
+li DIGA 0
+sigueA1:
+
+bltz ITB continueB1
+lb DIGB numeroB(ITB)
+addi DIGB DIGB -0x30
+b sigueB1
+continueB1:
+li DIGB 0
+sigueB1:
+
+
+skip1:
+li RESTADOR 0			# Inicializo restador a cero
+sub RESTADOR DIGA DIGB		# Le resto al digito A el digito B
+sub RESTADOR RESTADOR BUFFER 	# Si habia carry de la resta pasada se lo resto
+
+bgez RESTADOR continue1		# Si el numero ess negativo, arreglo el buffer
+addi RESTADOR RESTADOR 10	# Sumo 10 al numero
+li BUFFER 1			# Cargo un 1 a restar de los proximos digitos
+
+continue1:
+addi RESTADOR RESTADOR 0x30
+sb RESTADOR resultado(NUMIT)	# Agrego el digito al resultado
+
+# Corro los iteradores
+addi NUMIT NUMIT -1
+addi ITA ITA -1
+addi ITB ITB -1
+b resta1
+
+# ES LO MISMO QUE RESTA 1 PERO RESTO NUMEROB A NUMERO A Y EL SIGNO CAMBIA
+resta2:
+bltz NUMIT listo
+
+#lb DIGA numeroA(ITA)
+#lb DIGB numeroB(ITB)
+#bgt DIGA 0x
+#bgez ITB skip1
+#li DIGB 0
+
+bltz ITA continueA2		# Si el iterador de numero A es cero o menos, el digito es cero
+lb DIGA numeroA(ITA)		# Cargo el digito
+addi DIGA DIGA -0x30		# Convierto digito a decimal
+b sigueA2
+continueA2:
+li DIGA 0
+sigueA2:
+
+bltz ITB continueB2
+lb DIGB numeroB(ITB)
+addi DIGB DIGB -0x30
+b sigueB2
+continueB2:
+li DIGB 0
+sigueB2:
+
+
+skip2:
+li RESTADOR 0			# Inicializo restador a cero
+sub RESTADOR DIGB DIGA		# Le resto al digito A el digito B
+sub RESTADOR RESTADOR BUFFER 	# Si habia carry de la resta pasada se lo resto
+
+bgez RESTADOR continue2		# Si el numero ess negativo, arreglo el buffer
+addi RESTADOR RESTADOR 10	# Sumo 10 al numero
+li BUFFER 1			# Cargo un 1 a restar de los proximos digitos
+
+continue2:
+addi RESTADOR RESTADOR 0x30
+sb RESTADOR resultado(NUMIT)	# Agrego el digito al resultado
+
+# Corro los iteradores
+addi NUMIT NUMIT -1
+addi ITA ITA -1
+addi ITB ITB -1
+b resta2
+
+listo:
+li $t0 0				# Inicializo contador en cero
+printCounter:
+lb $t1 resultado($t0)		# Cargo el digito t1
+bgt $t1 0x30 listoPrintCounter	# Si el digito es mayor que cero, imprimo desde ahi
+addi $t0 $t0 1
+b printCounter
+
+listoPrintCounter:
+
+
+li $v0 4
+la $a0 resultado($t0)
+syscall
+
+li $v0 10
+syscall
+
+esCero:
+
+li $v0 1
+li $a0 0
+syscall
+
+# IMPRIMO Y TERMINO EL PROGRAMA
+
+
+

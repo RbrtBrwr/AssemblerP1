@@ -79,7 +79,48 @@ SALTO
 #IMPRIMIR(operacion)
 #IMPRIMIR(numeroB)
 
+<<<<<<< HEAD
 
+
+SUMA:
+
+=======
+RESTA:
+>>>>>>> resta
+.eqv IT $t0		# Iterador de digitos 	CREO QUE NECESITO UN ITERADOR POR NUMERO, ME FALTA VER COMO LOS ALINEO
+.eqv NUMIT $t1		# Iterador del numero
+.eqv DIGA $t2		# Digito IT del numero A
+.eqv DIGB $t3		# Digito IT del numero B
+.eqv RESTADOR $t4	# Proximo digito
+.eqv BUFFER $t5
+
+li IT 48			# EESTO VA A SER 49 PARA CONTAR EL SIGNO TAMBIEN
+li NUMIT 49
+li RESTADOR 0
+li BUFFER 0		# El buffer contiene el carry cuando el digito A es menor que el B
+
+	loopResta:
+bltz NUMIT listoResta
+
+
+lb DIGA numeroA(IT)	# Cargo proximo digito del numero A
+beqz DIGA continueA	# Si es cero sigo
+addi DIGA DIGA -0x30
+continueA:
+
+lb DIGB numeroB(IT)
+beqz DIGA continueB
+addi DIGB DIGB -0x30
+continueB:
+
+
+	listoResta
+IMPRIMIR(resultado)
+b finPrograma
+
+<<<<<<< HEAD
+li IT 48
+=======
 
 SUMA:
 
@@ -89,7 +130,8 @@ SUMA:
 .eqv DIGB $t3		# Digito IT del numero B
 .eqv SUMADOR $t4		# Proximo digito
 
-li IT 48
+li IT 48			# EESTO VA A SER 49 PARA CONTAR EL SIGNO TAMBIEN
+>>>>>>> resta
 li NUMIT 49
 li SUMADOR 0
 
@@ -145,11 +187,12 @@ addi IT IT -1
 
 b loopSuma
 
-caseCero:
-
 	listoSuma:
 IMPRIMIR(resultado)
+b finPrograma
 
+
+finPrograma:
 EXIT
 
 

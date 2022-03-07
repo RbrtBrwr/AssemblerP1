@@ -1,0 +1,189 @@
+	.data
+
+#A: .asciiz "+9999999999999999999999999999999999999999999999999"
+#B: .asciiz "+3333333333333333333333333333333333333333333333333"
+# A - B debe ser +6666666666666666666666666666666666666666666666666
+
+#A: .asciiz "9999999999999999999999999999999999999999999999999"
+#B: .asciiz "9999999999999999999999999999999999999999999999999"
+
+#C: .asciiz "6666666666666666666666666666666666666666666666666"
+# B + C debe ser +9999999999999999999999999999999999999999999999999
+
+# C - A debe ser -3333333333333333333333333333333333333333333333333
+
+numeroA: .space 52
+operacion: .space 2
+numeroB: .space 52
+
+resultado: .space 52
+
+mensajeNumeroA: .asciiz "Introduzca primer numero: "
+mensajeOperacion: .asciiz "Introduzca la operacion que desea realizar: "
+mensajeNumeroB: .asciiz "Introduzca segundo numero: "
+
+salto: .asciiz "\n"
+
+	.text
+
+	#MACROS
+# IMPRIMIR MENSAJES
+.macro IMPRIMIR(%mensaje)
+	li $v0 4
+	la $a0 %mensaje
+	syscall
+.end_macro 
+
+# SALTO DE LINEA
+.macro SALTO
+	li $v0 4
+	la $a0 salto
+	syscall
+.end_macro 
+
+# PEDIR OPERANDO AL USUARIO
+.macro OPERANDO(%numero)
+	li $v0 8
+	la $a0 %numero
+	li $a1 52
+	syscall
+.end_macro 
+
+# PEDIR SIMBOLO DE OPERACION AL USUARIO
+.macro OPERACION
+	li $v0 8
+	la $a0 operacion
+	li $a1 2
+	syscall
+.end_macro 
+
+# SALIR DEL PROGRAMA
+.macro EXIT
+	li $v0 10
+	syscall
+.end_macro 
+
+IMPRIMIR(mensajeNumeroA)
+OPERANDO(numeroA)
+SALTO
+
+#IMPRIMIR(mensajeOperacion)
+#OPERACION
+#SALTO
+
+IMPRIMIR(mensajeNumeroB)
+OPERANDO(numeroB)
+SALTO
+
+#IMPRIMIR(numeroA)
+#IMPRIMIR(operacion)
+#IMPRIMIR(numeroB)
+
+
+
+SUMA:
+
+.eqv ITA $t0		# Iterador de digitos 	
+.eqv ITB $t1
+.eqv NUMIT $t2		# Iterador del numero
+.eqv DIGA $t3		# Digito IT del numero A
+.eqv DIGB $t4		# Digito IT del numero B
+.eqv SUMADOR $t5		# Proximo digito
+
+li ITA 49
+li ITB 49
+li NUMIT 49
+li SUMADOR 0
+
+	loopIteradorA:
+lb DIGA numeroA(ITA)		# Busco la posicion del primer digito ascii
+addi ITA ITA -1
+bnez DIGA exitLoopIteradorA
+
+b loopIteradorA
+	exitLoopIteradorA:
+	
+	loopIteradorB:
+lb DIGB numeroB(ITB)
+addi ITB ITB -1
+bnez DIGB exitLoopIteradorB
+
+b loopIteradorB
+	exitLoopIteradorB:
+
+
+	loopSuma:
+blez NUMIT listoSuma		# Si el iterador del numero llego al final, termine
+
+#bltz ITA testA
+#b continue
+#testA:
+#bltz ITB testB
+#b continue
+#testB:
+#b listoSuma
+
+continue:
+
+bltz ITA continueA		# Si el iterador de numero A es cero o menos, el digito es cero
+lb DIGA numeroA(ITA)		# Cargo el digito
+addi DIGA DIGA -0x30		# Convierto digito a decimal
+b sigueA
+continueA:
+li DIGA 0
+sigueA:
+
+bltz ITB continueB
+lb DIGB numeroB(ITB)
+addi DIGB DIGB -0x30
+b sigueB
+continueB:
+li DIGB 0
+sigueB:
+
+# HAY QUE REVISAR QUE NO SEA MENOR QUE CERO, SIGNIFICA QUE ES UN ERROR O UN SIGNO
+
+add SUMADOR SUMADOR DIGA
+add SUMADOR SUMADOR DIGB
+
+# Si el sumador es mayor que 9 tengo que ajustar
+bgt SUMADOR 9 ajustarSum
+
+# Si no es mayor que nueve, cargo el digito ascii
+addi SUMADOR SUMADOR 0x30
+sb SUMADOR resultado(NUMIT)
+
+# Reseteo sumador
+li SUMADOR 0
+# Muevo iterador del resultado
+addi NUMIT NUMIT -1
+# Muevo iterador de los numeros
+addi ITA ITA -1
+addi ITB ITB -1
+
+b loopSuma
+
+ajustarSum:
+
+addi SUMADOR SUMADOR -10
+addi SUMADOR SUMADOR 0x30
+sb SUMADOR resultado(NUMIT)
+
+# Reseteo sumador
+li SUMADOR 1
+# Muevo iterador del resultado
+addi NUMIT NUMIT -1
+# Muevo iterador de los numeros
+addi ITA ITA -1
+addi ITB ITB -1
+
+b loopSuma
+
+	listoSuma:
+IMPRIMIR(resultado)
+
+EXIT
+
+
+	
+	

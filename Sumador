@@ -1,0 +1,163 @@
+	.data
+
+numeroA: .space 52
+operacion: .space 2
+numeroB: .space 52
+
+resultado: .space 52
+
+mensajeNumeroA: .asciiz "Introduzca primer numero: "
+mensajeOperacion: .asciiz "Introduzca la operacion que desea realizar: "
+mensajeNumeroB: .asciiz "Introduzca segundo numero: "
+
+salto: .asciiz "\n"
+
+	.text
+
+	#MACROS
+# IMPRIMIR MENSAJES
+.macro IMPRIMIR(%mensaje)
+	li $v0 4
+	la $a0 %mensaje
+	syscall
+.end_macro 
+
+# SALTO DE LINEA
+.macro SALTO
+	li $v0 4
+	la $a0 salto
+	syscall
+.end_macro 
+
+# PEDIR OPERANDO AL USUARIO
+.macro OPERANDO(%numero)
+	li $v0 8
+	la $a0 %numero
+	li $a1 52
+	syscall
+.end_macro 
+
+# PEDIR SIMBOLO DE OPERACION AL USUARIO
+.macro OPERACION
+	li $v0 8
+	la $a0 operacion
+	li $a1 2
+	syscall
+.end_macro 
+
+# SALIR DEL PROGRAMA
+.macro EXIT
+	li $v0 10
+	syscall
+.end_macro 
+
+# VARIABLES A UTILIZAR
+.eqv ITA $t0		# Iterador de digitos 	
+.eqv ITB $t1
+.eqv NUMIT $t2		# Iterador del numero
+.eqv DIGA $t3		# Digito IT del numero A
+.eqv DIGB $t4		# Digito IT del numero B
+.eqv SUMADOR $t5		# Proximo digito
+
+li ITA 49
+li ITB 49
+li NUMIT 49
+li SUMADOR 0
+
+
+IMPRIMIR(mensajeNumeroA)
+OPERANDO(numeroA)
+SALTO
+
+IMPRIMIR(mensajeNumeroB)
+OPERANDO(numeroB)
+SALTO
+
+
+	loopIteradorA:
+lb DIGA numeroA(ITA)		# Busco la posicion del primer digito ascii
+addi ITA ITA -1
+bnez DIGA exitLoopIteradorA
+
+b loopIteradorA
+	exitLoopIteradorA:
+	
+	loopIteradorB:
+lb DIGB numeroB(ITB)
+addi ITB ITB -1
+bnez DIGB exitLoopIteradorB
+
+b loopIteradorB
+	exitLoopIteradorB:
+
+
+	suma:
+blez NUMIT listo			# Si el iterador del numero llego al final, termine
+
+bltz ITA continueA		# Si el iterador de numero A es cero o menos, el digito es cero
+lb DIGA numeroA(ITA)		# Cargo el digito
+addi DIGA DIGA -0x30		# Convierto digito a decimal
+b sigueA
+continueA:
+li DIGA 0
+sigueA:
+
+bltz ITB continueB
+lb DIGB numeroB(ITB)
+addi DIGB DIGB -0x30
+b sigueB
+continueB:
+li DIGB 0
+sigueB:	
+
+add SUMADOR DIGA DIGB
+
+# Si el sumador es mayor que 9 tengo que ajustar
+bgt SUMADOR 0x9 ajustarSum
+
+# Si no es mayor que nueve, cargo el digito ascii
+addi SUMADOR SUMADOR 0x30
+sb SUMADOR resultado(NUMIT)
+
+# Reseteo sumador
+li SUMADOR 0
+# Muevo iteradores
+addi NUMIT NUMIT -1
+addi ITA ITA -1
+addi ITB ITB -1
+
+b suma
+
+ajustarSum:
+
+addi SUMADOR SUMADOR -10
+addi SUMADOR SUMADOR 0x30
+sb SUMADOR resultado(NUMIT)
+li SUMADOR 1			# Sumo el carry al sumador
+
+addi NUMIT NUMIT -1
+addi ITA ITA -1
+addi ITB ITB -1
+	
+	
+	
+	
+	listo:
+li $t0 0				# Inicializo contador en cero
+printCounter:
+lb $t1 resultado($t0)		# Cargo el digito t1
+bgt $t1 0x30 listoPrintCounter	# Si el digito es mayor que cero, imprimo desde ahi
+addi $t0 $t0 1
+b printCounter
+
+listoPrintCounter:
+
+
+li $v0 4
+la $a0 resultado($t0)
+syscall
+
+li $v0 10
+syscall
+
+

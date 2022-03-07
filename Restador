@@ -93,7 +93,6 @@ bgt ITA ITB resta1		# Si el iterador de A es mayor que el de B, resto normal
 blt ITA ITB resta2		# Si el iterador de B es mayor que el de A, resto B - A y cambio el signo
 
 
-# ESTO NO ESTA LISTO, SI SON NUMEROS DEL MISMO LARGO Y EL PRIMER DIGITO ES IGUAL ENTONCES ETSPLOTA
 li $t7 0				#Para ver el primer digito, esto despues va a tener que ser 1 para contar el signo
 
 greaterThanLoop:
